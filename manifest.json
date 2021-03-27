@@ -1,15 +1,20 @@
- {
-    "name": "PassHub",
-    "version": "0.5",
-    "description": "PassHub login",
-    "permissions": ["activeTab", "tabs"],
+{
+    "name": "PassHub.net",
+    "version": "1.0.1",
+    "description": "PassHub.net password manager",
+    "permissions": ["activeTab", "tabs", "https://*/", "http://localhost:8080/*"],
     "background": {
         "scripts": ["background.js"],
         "persistent": false
     },
 
     "externally_connectable": {
-        "matches": [ "http://localhost:8080/*", "https://*.passhub.net/*", "https://*.passhub.ch/*"]
+        "matches": [ 
+            "http://localhost:8080/*", 
+            "https://*.passhub.net/*", 
+            "https://*.passhub.ch/*", 
+            "https://*.jetinf.us/*"
+        ]
     },
 
     "browser_action": {
@@ -31,4 +36,4 @@
         "128": "images/passhub128.png"
     },
     "manifest_version": 2
-  }
+}

@@ -1,8 +1,11 @@
 
+// const consoleLog = console.log;
+const consoleLog = () => {}
+
 function contentScriptCb(result) {
     const lastErr = chrome.runtime.lastError;
     if (lastErr) {
-      console.log(' lastError: ' + JSON.stringify(lastErr));
+      consoleLog(' lastError: ' + JSON.stringify(lastErr));
     }
 }
 
@@ -15,19 +18,34 @@ const queryInfo = {
 };
 
 function advItemClick(e) {
-  console.log(this);
-  console.log('----');
-  console.log(e);
-  console.log('----');
+  consoleLog(this);
+  consoleLog('----');
+  consoleLog(e);
+  consoleLog('----');
   const row = parseInt(this.getAttribute('data-row'));
-  console.log(row);
+  consoleLog(row);
 
   chrome.tabs.query(queryInfo, function(tabs) {
     tabId = tabs[0].id;
-    chrome.tabs.executeScript(tabId, {
-      code: `loginRequestJson = ${JSON.stringify(found[row])}`
-    }, function() {
-      chrome.tabs.executeScript(tabId, {file: 'contentScript.js'}, contentScriptCb)
+    chrome.tabs.sendMessage(tabs[0].id, {
+        greeting: "loginRequest", 
+        username: found[row].username, 
+        password: found[row].password 
+      }, function(response) {
+        if(chrome.runtime.lastError) {
+          consoleLog('SendMessage rintime.error');
+          consoleLog(chrome.runtime.lastError);
+        }
+
+        if(response == undefined) {
+          chrome.tabs.executeScript(tabId, {
+            code: `loginRequestJson = ${JSON.stringify(found[row])}`
+          }, function() {
+            chrome.tabs.executeScript(tabId, {file: 'contentScript.js'}, contentScriptCb)
+          });
+        } else {
+          consoleLog(response.farewell);
+        }
     });
   });
 }
@@ -38,7 +56,7 @@ document.querySelector('.close-popup').onclick = function (){
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        console.log(request);
+        consoleLog(request);
         if (request.id == 'advise') {
           const p = document.querySelector('#status-text');
           if (request.found.length) {
@@ -98,9 +116,9 @@ chrome.tabs.query(queryInfo, function(tabs) {
     const tab = tabs[0];
     tabId = tab.id;
 
-    console.log('popup ' + tab.url);
-    chrome.runtime.sendMessage({id: "popup opened", url: tab.url, tabId: tab.id},(reply) => {
-        console.log(reply);
+    consoleLog('popup ' + tab.url);
+    chrome.runtime.sendMessage({id: "popup shown", url: tab.url, tabId: tab.id},(reply) => {
+        consoleLog(reply);
         const p = document.querySelector('#status-text');
         if(reply.response == 'not connected') {
             p.innerHTML = 'Please sign in to <a id="passhub_link" target="_blank">PassHub.net</a>';
